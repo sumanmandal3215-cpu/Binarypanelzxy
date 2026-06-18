@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Analytics Dashboard (Demo)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #0b0f19; 
+            color: #e2e8f0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding-top: 50px; 
+        }
+        .secure-card { 
+            background-color: #111827; 
+            border: 1px solid #1f2937; 
+            border-radius: 8px; 
+        }
+        .hidden-section { 
+            display: none; 
+        }
+        .status-pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="auth-gate" class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="secure-card p-4 shadow">
+                <h4 class="text-center mb-3 text-primary">সিস্টেম অ্যাক্সেস</h4>
+                <p class="text-muted small text-center">নিচের বাটনে ক্লিক করে সরাসরি ড্যাশবোর্ড আনলক করুন।</p>
+                <hr class="border-secondary">
+                <div class="mb-3">
+                    <label class="form-label text-muted">অ্যাক্সেস কী / পাসওয়ার্ড (ঐচ্ছিক)</label>
+                    <input type="password" id="admin-pass" class="form-control bg-dark text-white border-secondary" placeholder="যেকোনো কিছু লিখুন বা ফাঁকা রাখুন">
+                </div>
+                <button class="btn btn-primary w-100 fw-bold" onclick="verifyAccess()">প্যানেল আনলক করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="hidden-section">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+            <div>
+                <h2 class="fw-bold text-white">Crypto Analytics Dashboard</h2>
+                <p class="text-muted m-0"><span class="status-pulse"></span>লাইভ ডেমো ইন্টারফেস</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="secure-card p-4">
+                    <span class="text-muted d-block mb-1">সিস্টেম রিজার্ভ ব্যালেন্স</span>
+                    <h2 class="fw-bold text-success" id="display-balance">100.00 USDT</h2>
+                    <span class="badge bg-success">সচল (Active)</span>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="secure-card p-4">
+                    <h5 class="fw-bold mb-3 text-info">নিরাপদ ট্রানজেকশন সিমুলেশন</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label text-muted small">অ্যামাউন্ট ইনপুট (USDT)</label>
+                            <input type="number" id="tx-amount" class="form-control bg-dark text-white border-secondary" value="10">
+                        </div>
+                        <div class="col-sm-6 d-flex align-items-end">
+                            <button class="btn btn-success w-100 fw-bold" onclick="processLedger()">ব্যালেন্স যোগ করুন</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="secure-card p-4">
+                    <h5 class="fw-bold mb-3">সিস্টেম অডিট লগ (Audit Log)</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped m-0">
+                            <thead>
+                                <tr>
+                                    <th>টাইমস্ট্যাম্প</th>
+                                    <th>অ্যাকশন</th>
+                                    <th>পরিমাণ</th>
+                                    <th>স্ট্যাটাস</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-rows">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentAsset = 100.00;
+
+    // গেটওয়ে আনলক করার ফাংশন
+    function verifyAccess() {
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('main-dashboard').classList.remove('hidden-section');
+        updateLog(new Date().toLocaleTimeString(), "ড্যাশবোর্ড আনলক", "-", "SUCCESS");
+    }
+
+    // ব্যালেন্স প্রসেস করার ফাংশন
+    function processLedger() {
+        const amountInput = document.getElementById('tx-amount');
+        const amount = parseFloat(amountInput.value);
+
+        if (isNaN(amount) || amount <= 0) {
+            alert("অনুগ্রহ করে সঠিক সংখ্যা দিন।");
+            return;
+        }
+
+        currentAsset += amount;
+        document.getElementById('display-balance').innerText = currentAsset.toFixed(2) + " USDT";
+        updateLog(new Date().toLocaleTimeString(), "ডিপোজিট আপডেট", `+ ${amount.toFixed(2)} USDT`, "COMPLETED");
+    }
+
+    // টেবিল লগ আপডেট করার ফাংশন
+    function updateLog(time, action, volume, status) {
+        const tbody = document.getElementById('log-rows');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${time}</td>
+            <td>${action}</td>
+            <td class="text-info">${volume}</td>
+            <td><span class="badge bg-secondary">${status}</span></td>
+        `;
+        tbody.insertBefore(row, tbody.firstChild);
+    }
+</script>
+
+</body>
+                                            </html>
+                                            
